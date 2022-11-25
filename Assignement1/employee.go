@@ -1,8 +1,10 @@
-package Assignement1
+package main
 
 import (
+	"database/sql"
 	"encoding/json"
-	"io"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -10,55 +12,51 @@ import (
 type Employee struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
-	Age  int    `json:"age"`
+	Add  string `json:"Add"`
 }
+
+var Db *sql.DB
+var Emp = []Employee{
+	{"101", "rajan", "Patna"},
+}
+var Employees = []Employee{}
 
 func handlerGet(writer http.ResponseWriter, request *http.Request) {
-	employee := []Employee{
-		{"INT195", "Rajan", 21},
-	}
-	var employees []Employee
-
-	respBody, _ := json.Marshal(employee)
-	_, _ = writer.Write(respBody)
+	//var employees Employee
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
 	if request.Method == http.MethodGet {
-		var response string
-		for _, value := range employees {
-			response += "ID: " + value.Id + "\tName: " + value.Name + "\n"
-		}
-
-		if response == "" {
-			response = "No employees"
-		}
-
-		_, err := io.WriteString(writer, response)
-		if err != nil {
-			log.Println(err)
-			return
-		}
+		respBody, _ := json.Marshal(Employees)
+		_, _ = writer.Write(respBody)
 	}
-
-	return
 }
 func handlerPost(writer http.ResponseWriter, request *http.Request) {
-	var employees []Employee
-	if request.Method == http.MethodPost {
-		var employee Employee
-		respBody, _ := json.Marshal(employee)
-		_, err := writer.Write(respBody)
+
+	var emp Employee
+	writer.Header().Set("Content-Type", "application/json")
+	req, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		_, err := fmt.Fprintf(writer, "enter data")
 		if err != nil {
 			return
 		}
-		employees = append(employees, employee)
-		_, err = io.WriteString(writer, "Data added successfully")
-		if err != nil {
-			return
-		}
+	}
+	err = json.Unmarshal(req, &emp)
+	if err != nil {
+		return
+	}
+	Employees = append(Employees, emp)
+	fmt.Println(Employees, emp)
+	writer.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(writer).Encode(emp)
+	if err != nil {
+		return
 	}
 }
 
 func main() {
-	http.HandleFunc("/employee", handlerGet)     //endpoint and function
-	http.HandleFunc("/employee", handlerPost)    //endpoint and function
-	log.Fatal(http.ListenAndServe(":8080", nil)) //start the server
+	http.HandleFunc("/employee", handlerGet)
+	http.HandleFunc("/employeePost", handlerPost)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+	defer Db.Close()
 }

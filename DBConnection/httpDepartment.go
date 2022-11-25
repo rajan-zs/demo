@@ -41,7 +41,7 @@ func main() {
 	}
 	defer Db.Close()
 	err = Db.Ping()
-	roustartserver()ter := mux.NewRouter()
+	router := mux.NewRouter()
 	router.HandleFunc("/Department", deptGetHandler).Methods("GET")
 	router.HandleFunc("/Department", deptPostHandler).Methods("POST")
 	err = http.ListenAndServe(":8080", router)

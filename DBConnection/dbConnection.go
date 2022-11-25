@@ -14,8 +14,11 @@ type employee struct {
 	phone  string
 }
 
+var db *sql.DB
+
 func main() {
-	db, err := sql.Open("mysql", "rajan:mypassword@tcp(127.0.0.1:3306)/employee")
+	var err error
+	db, err = sql.Open("mysql", "rajan:mypassword@tcp(127.0.0.1:3306)/employee")
 	if err != nil {
 		log.Println(err)
 		return
