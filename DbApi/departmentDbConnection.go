@@ -81,14 +81,14 @@ func getEmpByIdHandler(writer http.ResponseWriter, request *http.Request) {
 	_, _ = writer.Write(respBody)
 }
 
-func deptHandlerGet(writer http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodGet {
-		http.Error(writer, http.StatusText(405), 405)
+func deptHandlerGet(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, http.StatusText(405), 405)
 		return
 	}
 	rows, err := db.Query("SELECT * FROM dept")
 	if err != nil {
-		http.Error(writer, http.StatusText(500), 500)
+		http.Error(w, "Not able to connect with Db", 500)
 		return
 	}
 	defer func(rows *sql.Rows) {
@@ -104,95 +104,74 @@ func deptHandlerGet(writer http.ResponseWriter, request *http.Request) {
 		departments = append(departments, d)
 	}
 	if err = rows.Err(); err != nil {
-		http.Error(writer, http.StatusText(500), 500)
+		http.Error(w, "Rows are not now avilable", http.StatusInternalServerError)
 		return
 	}
 	fmt.Println(departments)
 
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	respBody, _ := json.Marshal(departments)
-	_, _ = writer.Write(respBody)
+	_, _ = w.Write(respBody)
 
 }
 
-//goland:noinspection ALL
-func deptHandlerPost(writer http.ResponseWriter, request *http.Request) {
+func deptHandlerPost(w http.ResponseWriter, r *http.Request) {
 	var dep Department
-	//var Departments []Department
-	writer.Header().Set("Content-Type", "application/json")
-	req, err := ioutil.ReadAll(request.Body)
+	w.Header().Set("Content-Type", "application/json")
+	req, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		_, err := fmt.Fprintf(writer, "enter data")
+		_, err := fmt.Fprintf(w, "enter data")
 		if err != nil {
 			return
 		}
 	}
-	err = json.Unmarshal(req, &dep)
-	if err != nil {
-		return
-	}
+	_ = json.Unmarshal(req, &dep)
 	query := "INSERT INTO dept(dept.deptId, dept.depName) VALUES (?, ?)"
 	_, a := db.Exec(query, dep.DepId, dep.DepName)
 	fmt.Println(a)
-	//Departments = append(Departments, dep)
-
 	if err != nil {
-		http.Error(writer, http.StatusText(500), 500)
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-
-	writer.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(writer).Encode(dep)
+	w.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(w).Encode(dep)
 	if err != nil {
 		return
 	}
 }
-func empHandlerGet(writer http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodGet {
-		http.Error(writer, http.StatusText(405), 405)
+func empHandlerGet(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	rows, err := db.Query("SELECT emp.empId,emp.empName,dept.deptId, emp.phone ,dept.depName FROM emp INNER JOIN dept on emp.id = dept.deptId")
-	//rows, err := db.Query("select  * from emp")
 	if err != nil {
-		http.Error(writer, http.StatusText(500), 500)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
 
-		}
-	}(rows)
 	var employees = make([]Employee, 0)
 	for rows.Next() {
 		var e Employee
 		err = rows.Scan(&e.EmpId, &e.EmpName, &e.DeptId, &e.Phone, &e.DepName)
 		employees = append(employees, e)
 	}
-	if err = rows.Err(); err != nil {
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
-	fmt.Println(employees)
 
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusOK)
 	respBody, _ := json.Marshal(employees)
-	_, _ = writer.Write(respBody)
+	_, _ = w.Write(respBody)
 
 }
 
-//goland:noinspection ALL
-func empHandlerPost(writer http.ResponseWriter, request *http.Request) {
+func empHandlerPost(w http.ResponseWriter, r *http.Request) {
 
 	var emp Employee
 	var Employees []Employee
-	writer.Header().Set("Content-Type", "application/json")
-	req, err := ioutil.ReadAll(request.Body)
+	w.Header().Set("Content-Type", "application/json")
+	req, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		_, err := fmt.Fprintf(writer, "enter data")
+		_, err := fmt.Fprintf(w, "enter data")
 		if err != nil {
 			return
 		}
@@ -209,12 +188,12 @@ func empHandlerPost(writer http.ResponseWriter, request *http.Request) {
 	Employees = append(Employees, emp)
 
 	if err != nil {
-		http.Error(writer, http.StatusText(500), 500)
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 
-	writer.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(writer).Encode(emp)
+	w.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(w).Encode(emp)
 	if err != nil {
 		return
 	}
