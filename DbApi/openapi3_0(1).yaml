@@ -1,0 +1,226 @@
+openapi: 3.0.3
+info:
+  title: "Employee API"
+  description: "Documentation for Employee API"
+  version: 1.2.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /employee:
+    get:
+      tags:
+        - Employee
+      description: Get the list of all the employees
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: 49682d52-6ab5-44aa-a817-fa4c5b05e086
+                    name:
+                      type: string
+                      example: Rajan
+                    department:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 49682d52-6ab5-44aa-a817-fa4c5b05e086
+                        name:
+                          type: string
+                          example: DEV
+                    phone:
+                      type: string
+                      example: 
+        '500':
+          description: internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Response message
+                properties:
+                  message:
+                    type: string
+                    example: internal Server Error
+    post:
+      tags:
+        - Employee
+      description: Add an employee
+      requestBody:
+        description: Body should contain name , department_id and phone as string of the employee
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: 49682d52-6ab5-44aa-a817-fa4c5b05e086
+                name:
+                  type: string
+                  example: Rajan
+                department_id:
+                  type: string
+                  example: 49682d52-6ab5-44aa-a817-fa4c5b05e086
+                phone:
+                  type: string
+                  example: 8709807062
+      responses:
+        '201':
+          description: Employee Added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 9682d52-6ab5-44aa-a817-fa4c5b05e086
+                  name:
+                    type: string
+                    example: Mohit Bajaj
+                  department_id:
+                    type: string
+                    example: 9682d52-6ab5-44aa-a817-fa4c5b05e086
+                  phone:
+                    type: string
+                    example: 8709807062
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Response message
+                properties:
+                  message:
+                    type: string
+                    example: server is not responding
+  /employee by ID:
+    get:
+      tags:
+        - Employee
+      parameters:
+        - name: id
+          in: query
+          description: ID of employee to be searched
+          required: true
+          schema:
+            type: string
+            example: 49682d52-6ab5-44aa-a817-fa4c5b05e086
+      responses:
+        '200':
+          description: Employee with that id found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 49682d52-6ab5-44aa-a817-fa4c5b05e086
+                  name:
+                    type: string
+                    example: Rajan 
+                  department:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 49682d52-6ab5-44aa-a817-fa4c5b05e086
+                      name:
+                        type: string
+                        example: DEV
+                  phone:
+                    type: string
+                    example: 8709807062
+        '404':
+          description: No employee with that id found
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Response message
+                properties:
+                  message:
+                    type: string
+                    example: No employee with that id found
+  /department:
+    post:
+      tags:
+        - Department
+      description: Get list of all departments
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: 49682d52-6ab5-44aa-a817-fa4c5b05e086
+                    name:
+                      type: string
+                      example: DEV
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Response message
+                properties:
+                  message:
+                    type: string
+                    example: Data Added Successfully
+    get:
+      tags:
+        - Department
+      description: Add a department
+      requestBody:
+        description: Body should contain name as string of the department in JSON format
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: DEV
+      responses:
+        '201':
+          description: Department added
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Response message
+                properties:
+                  message:
+                    type: string
+                    example: Data Added Successfully
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Response message
+                properties:
+                  message:
+                    type: string
+                    example: Server is not responding

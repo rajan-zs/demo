@@ -39,9 +39,8 @@ func TestGetRequest(t *testing.T) {
 	}
 
 	var employees = make([]Employee, 0)
-
+	handler := handlerGet
 	for i := range testcases {
-		handler := handlerGet
 		input, _ := json.Marshal(testcases[i].input)
 		req := httptest.NewRequest(testcases[i].method, "http://localhost:8080/employee", bytes.NewBuffer([]byte(input)))
 		req.Header.Set("Content-Type", "application/json")

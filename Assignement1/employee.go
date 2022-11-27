@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -15,18 +14,15 @@ type Employee struct {
 	Add  string `json:"Add"`
 }
 
-var Db *sql.DB
 var Emp = []Employee{
 	{"101", "rajan", "Patna"},
 }
-var Employees = []Employee{}
 
 func handlerGet(writer http.ResponseWriter, request *http.Request) {
-	//var employees Employee
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
 	if request.Method == http.MethodGet {
-		respBody, _ := json.Marshal(Employees)
+		respBody, _ := json.Marshal(Emp)
 		_, _ = writer.Write(respBody)
 	}
 }
@@ -45,18 +41,23 @@ func handlerPost(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		return
 	}
-	Employees = append(Employees, emp)
-	fmt.Println(Employees, emp)
+	Emp = append(Emp, emp)
 	writer.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(writer).Encode(emp)
+	marshal, err := json.Marshal(emp)
 	if err != nil {
 		return
 	}
+	_, err = writer.Write(marshal)
+	if err != nil {
+		return
+	}
+	//err = json.NewEncoder(writer).Encode(emp)
+
 }
 
 func main() {
 	http.HandleFunc("/employee", handlerGet)
 	http.HandleFunc("/employeePost", handlerPost)
 	log.Fatal(http.ListenAndServe(":8080", nil))
-	defer Db.Close()
+
 }

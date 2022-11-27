@@ -6,7 +6,6 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-	_ "github.com/google/uuid"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -62,6 +61,8 @@ func getEmpByIdHandler(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, http.StatusText(405), 405)
 		return
 	}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
 	id := request.URL.Query().Get("empId")
 	rows := db.QueryRow("SELECT emp.empId, emp.empName, dept.deptId, emp.phone ,dept.depName FROM emp INNER JOIN dept on emp.id = dept.deptId where empId =?", id)
 
@@ -73,10 +74,7 @@ func getEmpByIdHandler(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, http.StatusText(500), 500)
 		return
 	}
-	fmt.Println(employees)
 
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
 	respBody, _ := json.Marshal(employees)
 	_, _ = writer.Write(respBody)
 }
@@ -184,7 +182,6 @@ func empHandlerPost(w http.ResponseWriter, r *http.Request) {
 	query := "INSERT INTO emp(empId, empName, id, phone) VALUES (?, ?,?,?)"
 	u := uuid.New()
 	_, err = db.Exec(query, u, emp.EmpName, emp.DeptId, emp.Phone)
-	fmt.Println(err)
 	Employees = append(Employees, emp)
 
 	if err != nil {
@@ -193,7 +190,8 @@ func empHandlerPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(emp)
+	respBody, _ := json.Marshal(emp)
+	_, _ = w.Write(respBody)
 	if err != nil {
 		return
 	}
