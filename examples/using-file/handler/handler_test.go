@@ -21,20 +21,19 @@ func Test_Read(t *testing.T) {
 	ctx := gofr.NewContext(nil, nil, app)
 
 	testcases := []struct {
-		desc     string
-		expErr   error
-		resp     interface{}
-		fileName string
-		fileMode string
-		ctx      *gofr.Context
+		desc       string
+		expErr     error
+		resp       interface{}
+		fileName   string
+		fileAccess file.Mode
+		ctx        *gofr.Context
 	}{
-		{"Successful Read", nil, "Welcome to Zopsmart!", "../test.txt", "rw", ctx},
-		{desc: "Invalid file", expErr: &fs.PathError{Op: "open", Path: "", Err: syscall.Errno(2)}, fileMode: "rw", ctx: ctx},
-		{"Failed to Read", errors.New("EOF"), nil, "../abc.txt", "rw", ctx},
+		{"Successful Read", nil, "Welcome to Zopsmart!", "../temp/test.txt", "rw", ctx},
+		{desc: "Invalid file", expErr: &fs.PathError{Op: "open", Path: "", Err: syscall.Errno(2)}, fileAccess: "rw", ctx: ctx},
+		{"Failed to Read", errors.New("EOF"), nil, "../temp/abc.txt", "rw", ctx},
 	}
-
 	for i, tc := range testcases {
-		l, err := file.NewWithConfig(app.Config, tc.fileName, file.Mode(tc.fileMode))
+		l, err := file.NewWithConfig(app.Config, tc.fileName, tc.fileAccess)
 		if err != nil {
 			t.Error("Unable to initialize", err)
 		}
@@ -42,6 +41,7 @@ func Test_Read(t *testing.T) {
 		f := New(l)
 
 		resp, err := f.Read(tc.ctx)
+
 		assert.Equalf(t, tc.resp, resp, "Test case %v failed.\nExpected: %v, got: %v", i, tc.resp, resp)
 
 		assert.Equalf(t, tc.expErr, err, "Test case %v failed.\nExpected: %v, got: %v", i, tc.expErr, err)
@@ -56,19 +56,21 @@ func Test_Write(t *testing.T) {
 	ctx := gofr.NewContext(nil, nil, app)
 
 	testcases := []struct {
-		expErr   error
-		resp     interface{}
-		ctx      *gofr.Context
-		fileName string
-		fileMode file.Mode
+		desc       string
+		expErr     error
+		resp       interface{}
+		ctx        *gofr.Context
+		fileName   string
+		fileAccess file.Mode
 	}{
-		{nil, "File written successfully!", ctx, "../test.txt", "rw"},
-		{&fs.PathError{Op: "write", Path: "../test.txt", Err: syscall.Errno(9)}, nil, ctx, "../test.txt", "0444"},
-		{expErr: &fs.PathError{Op: "open", Path: "", Err: syscall.Errno(2)}, fileMode: "rw", ctx: ctx},
+		{"successful write", nil, "File written successfully!", ctx, "../temp/test.txt", "rw"},
+		{"failed write - invalid permission", &fs.PathError{Op: "write", Path: "../temp/test.txt", Err: syscall.Errno(9)},
+			nil, ctx, "../temp/test.txt", "0444"},
+		{desc: "failed write -invalid path", expErr: &fs.PathError{Op: "open", Path: "", Err: syscall.Errno(2)}, fileAccess: "rw", ctx: ctx},
 	}
 
 	for i, tc := range testcases {
-		l, err := file.NewWithConfig(app.Config, tc.fileName, tc.fileMode)
+		l, err := file.NewWithConfig(app.Config, tc.fileName, tc.fileAccess)
 		if err != nil {
 			t.Error("Unable to initialize", err)
 		}
