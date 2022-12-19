@@ -108,3 +108,38 @@ func TestCallWithHeaders_SOAP(t *testing.T) {
 		}
 	}
 }
+
+func Test_Bind(t *testing.T) {
+	ts := testSOAPServer()
+
+	test := struct {
+		resp []byte
+		i    interface{}
+	}{
+		resp: []byte("<note></note>"),
+	}
+	b := new(bytes.Buffer)
+	soapClient := NewSOAPClient(ts.URL, log.NewMockLogger(b), "basic-user", "password")
+
+	err := soapClient.Bind(test.resp, test.i)
+	if err != nil {
+		t.Errorf("test case us failed because of %v", err)
+	}
+}
+func Test_BindStrict(t *testing.T) {
+	ts := testSOAPServer()
+
+	test := struct {
+		resp []byte
+		i    interface{}
+	}{
+		resp: []byte("<note></note>"),
+	}
+	b := new(bytes.Buffer)
+	soapClient := NewSOAPClient(ts.URL, log.NewMockLogger(b), "basic-user", "password")
+
+	err := soapClient.BindStrict(test.resp, test.i)
+	if err != nil {
+		t.Errorf("test case us failed because of %v", err)
+	}
+}
